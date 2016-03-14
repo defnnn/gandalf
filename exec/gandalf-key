@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#/ NAME
+#/     gandalf key -- create a new gpg key
+#/
+#/ SYNOPSIS
+#/     gandalf key email
+
+# entry point
+function main {
+  local shome="$(cd -P -- "$(dirname -- "$BASH_SOURCE")/.." && pwd -P)"
+  source "$shome/script/profile"
+
+  readonly cfg_gandalf="$GANDALF/config/gandalf.json"
+
+  if [[ "$#" = 0 ]]; then
+    logger_fatal "missing email"
+    exit 1
+  fi
+
+  readonly local email="$1"; shift
+
+  readonly local tmp_genkey="$(mktemp -t XXXXXXXXX)"
+  trap "rm -f \"$tmp_genkey\"" EXIT
+  cat > "$tmp_genkey" <<EOF
+Key-Type: RSA
+Key-Length: 2048
+Subkey-Type: RSA
+Subkey-Length: 2048
+Name-Email: $email
+Expire-Date: 1y
+%commit
+EOF
+
+  gpg --batch --gen-key "$tmp_genkey"
+  rm -f "$tmp_genkey"
+  gpg --edit-key "$email" passwd save
+  gpg --export -a "$email" > "$(keys_path)/$email"
+}
+
+require sub "$BASH_SOURCE" "$@"

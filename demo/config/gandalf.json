@@ -1,0 +1,11 @@
+{ 
+  "keys_path": "config/keys",
+  "bundle": {
+    "moria": {
+      "secrets_path": "config/secrets",
+      "keys": [
+        "gandalf@middle.earth"
+      ]
+    }
+  }
+}
